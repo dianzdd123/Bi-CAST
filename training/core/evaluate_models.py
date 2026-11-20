@@ -30,12 +30,14 @@ def main() -> None:
     ap.add_argument("--batch_size", type=int, default=32)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--out", default=None, help="optional JSON results path")
+    ap.add_argument("--legacy-features", action="store_true",
+                    help="use full-recording normalization and FSR history for older checkpoints")
     args = ap.parse_args()
 
     probe = AuthorityDataset(args.recording, chunk_size=args.chunk_size)
     mid = probe.n // 2
     frame_range = {"full": None, "first": (0, mid), "second": (mid, probe.n)}[args.half]
-    ds = AuthorityDataset(args.recording, frame_range=frame_range, chunk_size=args.chunk_size)
+    ds = AuthorityDataset(args.recording, frame_range=frame_range, chunk_size=args.chunk_size, legacy_features=args.legacy_features)
     loader = DataLoader(ds, batch_size=args.batch_size, shuffle=False)
     device = torch.device(args.device)
 
@@ -47,7 +49,7 @@ def main() -> None:
             continue
         model = build_model(
             name, chunk_size=args.chunk_size,
-            bicast_backbone=args.bicast_backbone,
+            pretrained=False, bicast_backbone=args.bicast_backbone,
             input_modality=args.input_modality,
         ).to(device)
         model.load_state_dict(torch.load(ckpt, map_location=device))

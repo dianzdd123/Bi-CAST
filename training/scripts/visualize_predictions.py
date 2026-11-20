@@ -31,18 +31,20 @@ def main() -> None:
     ap.add_argument("--bicast_backbone", default="resnet50", choices=["resnet18", "resnet34", "resnet50"])
     ap.add_argument("--input_modality", default="vision_fsr_safety", choices=["vision", "vision_fsr", "vision_fsr_safety"])
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--legacy-features", action="store_true",
+                    help="use full-recording normalization and FSR history for older checkpoints")
     args = ap.parse_args()
 
     device = torch.device(args.device)
     model = build_model(
         args.model, chunk_size=args.chunk_size,
-        bicast_backbone=args.bicast_backbone,
+        pretrained=False, bicast_backbone=args.bicast_backbone,
         input_modality=args.input_modality,
     ).to(device)
     model.load_state_dict(torch.load(args.checkpoint, map_location=device))
     model.eval()
 
-    ds = AuthorityDataset(args.recording, chunk_size=args.chunk_size)
+    ds = AuthorityDataset(args.recording, chunk_size=args.chunk_size, legacy_features=args.legacy_features)
     loader = DataLoader(ds, batch_size=1, shuffle=False)                  
     agg = ChunkAggregator(chunk_size=args.chunk_size)
 

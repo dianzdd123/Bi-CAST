@@ -26,8 +26,10 @@ from iros.models.bicast import (
     BiCAST,
     BiCASTLoss,
     ChunkAggregator,
-    compute_fsr_features,
+
 )
+
+from iros.authority_features import recording_features
 
 WINDOW = 4                           
 CHUNK = 5                       
@@ -69,6 +71,7 @@ class AuthorityDataset(Dataset):
         img_size: int = IMG_SIZE,
         fsr_var_window: int = 5,
         chunk_size: int = CHUNK,
+        legacy_features: bool = False,
     ):
         self.root = Path(root)
         self.chunk_size = int(chunk_size)
@@ -111,23 +114,14 @@ class AuthorityDataset(Dataset):
         fsr_raw = np.stack(
             [arrays["fsr_L"][:n], arrays["fsr_R"][:n]], axis=1
         )
-        self.fsr_feats = compute_fsr_features(fsr_raw, var_window=fsr_var_window)
-        if not np.isfinite(self.fsr_feats).all():
-            raise ValueError(
-                "computed FSR features contain non-finite values; "
-                "check the magnitude of fsr_L/fsr_R"
-            )
-
-        iou = arrays["iou"][:n]
-        d_wall = arrays["d_wall"][:n]
-        d_wall_scale = max(float(np.max(d_wall)), 1e-6)
-        d_norm = d_wall / d_wall_scale
-        if not np.isfinite(d_norm).all():
-            raise ValueError("normalized d_wall contains non-finite values")
-        self.safety = np.stack([iou, d_norm], axis=1)
-
         lo, hi = frame_range if frame_range else (0, n)
         lo, hi = max(lo, 0), min(hi, n)
+        self.fsr_feats, self.safety = recording_features(
+            fsr_raw, arrays["iou"][:n], arrays["d_wall"][:n], (lo, hi),
+            var_window=fsr_var_window, legacy=legacy_features,
+        )
+        if not np.isfinite(self.fsr_feats).all():
+            raise ValueError("computed FSR features contain non-finite values")
 
         self.frame_range = (lo, hi)
         self.indices = list(
@@ -155,8 +149,10 @@ class AuthorityDataset(Dataset):
         t = self.indices[i]
         frame_ids = range(t - WINDOW + 1, t + 1)
         images = torch.stack([self._load_frame(j) for j in frame_ids])                  
-        fsr = torch.from_numpy(self.fsr_feats[t - WINDOW + 1 : t + 1])                
-        safety = torch.from_numpy(self.safety[t - WINDOW + 1 : t + 1])              
+        local_t = t - self.frame_range[0]
+        window = slice(local_t - WINDOW + 1, local_t + 1)
+        fsr = torch.from_numpy(self.fsr_feats[window])
+        safety = torch.from_numpy(self.safety[window])
         target = torch.from_numpy(self.alpha[t : t + self.chunk_size])                
         return {"images": images, "fsr": fsr, "safety": safety, "target": target}
 
@@ -551,17 +547,17 @@ def main() -> None:
                     choices=list(MODEL_REGISTRY.keys()))
     ap.add_argument(
         "--chunk_size", type=int, default=CHUNK, choices=[1, 5, 10],
-        help="prediction chunk C; paper Table IV evaluates 1, 5, 10",
+        help="prediction chunk C; paper Table III evaluates 1, 5, 10",
     )
     ap.add_argument(
         "--bicast_backbone", default="resnet50",
         choices=["resnet18", "resnet34", "resnet50"],
-        help="Bi-CAST visual backbone; paper Table IV compares 18/34/50",
+        help="Bi-CAST visual backbone; paper Table III compares 18/34/50",
     )
     ap.add_argument(
         "--input_modality", default="vision_fsr_safety",
         choices=["vision", "vision_fsr", "vision_fsr_safety"],
-        help="Bi-CAST modality ablation from paper Table IV",
+        help="Bi-CAST modality ablation from paper Table III",
     )
     ap.add_argument("--epochs", type=int, default=60)
     ap.add_argument("--batch_size", type=int, default=32)

@@ -114,7 +114,7 @@ def main() -> None:
         cfg = RUNS[key]
         c = int(cfg["chunk_size"])
         print("\n" + "=" * 78)
-        print(f"Table IV run: {key}  {cfg}")
+        print(f"Table III run: {key}  {cfg}")
         print("=" * 78)
 
         if args.train_dirs and args.valtest_dir:
@@ -162,7 +162,7 @@ def main() -> None:
         table.append(row)
 
     payload = {
-        "paper_table": "Table IV: Analysis of key design components",
+        "paper_table": "Table III: Analysis of key design components",
         "metric_definition": "bilateral mean of left/right test MAE, RMSE, and R^2",
         "unique_runs": unique_results,
         "rows_in_paper_order": table,
@@ -171,7 +171,7 @@ def main() -> None:
     with open(out_json, "w") as f:
         json.dump(payload, f, indent=2)
 
-    print("\nTable IV rows available from this run:")
+    print("\nTable III rows available from this run:")
     for row in table:
         if "mae" in row:
             print(

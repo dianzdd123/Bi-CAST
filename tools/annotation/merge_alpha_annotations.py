@@ -11,7 +11,7 @@ import pandas as pd
 
 ALPHA_MIN, ALPHA_MAX = 0.0, 0.9                                   
 
-def load_annotation(path: Path) -> np.ndarray:
+def _read_annotation(path: Path):
 
     if path.suffix.lower() == ".csv":
         df = pd.read_csv(path)
@@ -20,11 +20,38 @@ def load_annotation(path: Path) -> np.ndarray:
         missing = [c for c in need if c not in cols]
         if missing:
             raise ValueError(f"{path}: missing columns {missing}")
-        df = df.sort_values(cols["frame"])
-        return df[[cols["alpha_l"], cols["alpha_r"]]].to_numpy(dtype=np.float64)
+        frame = cols["frame"]
+        df[frame] = pd.to_numeric(df[frame], errors="raise")
+        if df[frame].isna().any() or df[frame].duplicated().any():
+            raise ValueError(f"{path}: missing or duplicate frame IDs")
+        df = df.sort_values(frame)
+        return df[frame].to_numpy(), df[[cols["alpha_l"], cols["alpha_r"]]].to_numpy(dtype=np.float64)
     with open(path, "rb") as f:
         d = pickle.load(f)
-    return np.stack([np.asarray(d["alpha_L"]), np.asarray(d["alpha_R"])], axis=1)
+    return None, np.stack([np.asarray(d["alpha_L"]), np.asarray(d["alpha_R"])], axis=1)
+
+def load_annotation(path: Path) -> np.ndarray:
+    return _read_annotation(path)[1]
+
+
+def aligned_scores(files):
+    if len(set(p.resolve() for p in files)) != len(files):
+        raise ValueError("each annotator must supply a distinct file")
+    reference = None
+    scores = []
+    for path in files:
+        frames, values = _read_annotation(path)
+        if values.ndim != 2 or values.shape[1] != 2 or not len(values) or not np.isfinite(values).all():
+            raise ValueError(f"{path}: expected finite bilateral scores for every frame")
+        if scores and len(values) != len(scores[0]):
+            raise ValueError(f"{path}: annotator frame counts differ")
+        if frames is not None:
+            if reference is not None and not np.array_equal(reference, frames):
+                raise ValueError(f"{path}: annotator frame IDs differ")
+            reference = frames
+        scores.append(values)
+    return np.stack(scores)
+
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
@@ -44,11 +71,8 @@ def main() -> None:
             f"(the paper protocol uses three independent annotators)"
         )
 
-    scores = [load_annotation(p) for p in files]
-    n = min(s.shape[0] for s in scores)
-    if any(s.shape[0] != n for s in scores):
-        print(f"note: annotators cover different lengths; truncating to {n} frames")
-    stack = np.stack([s[:n] for s in scores])                                
+    stack = aligned_scores(files)
+    n = stack.shape[1]
 
     merged = np.clip(stack.mean(axis=0), ALPHA_MIN, ALPHA_MAX)             
 

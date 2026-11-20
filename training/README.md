@@ -114,3 +114,29 @@ python -m training.scripts.train_yolo_seg --data path/to/dataset.yaml
 ```bash
 python -m training.scripts.smoke_test
 ```
+
+### Reproducing the preprocessing
+
+For the three-annotator protocol in §IV-B, supply one file per annotator. CSV
+files must contain the same frame IDs and may be in different row orders.
+Pickle inputs contain positional arrays, so each must already follow the
+recording's chronological frame order. The merger checks counts before taking
+the mean separately for each arm. Use the same image order for training.
+
+For new training runs, the safety stream takes IoU and the supplied minimum
+wall distance in the tracking coordinate system. Use consistent distance units
+across recordings and inference. The paper identifies the two inputs but does
+not specify a distance normalization constant. Derivative and variance features
+use the available force history within the selected partition. The importer
+applies session calibration and causal smoothing before dataset construction.
+
+When evaluating or plotting checkpoints trained with release `a1db652`, use
+`--legacy-features` to restore its full-recording maximum for distance
+normalization and its full-recording force-feature history. That offline
+normalization can use observations from the held-out part of Task 2.
+
+Table II reports smoothness separately for each authority signal. This release
+uses the mean absolute change between consecutive executed authority values.
+The manuscript does not specify the exact estimator for Table II. Table IV's
+smoothness measure uses the physical robot trajectory and has a different
+definition.

@@ -6,7 +6,7 @@ import math
 from collections import deque
 from typing import Optional
 
-import numpy as np
+from iros.authority_features import compute_fsr_features
 import torch
 import torch.nn as nn
 import torchvision.models as tv_models
@@ -226,22 +226,3 @@ class ChunkAggregator:
 
             alpha = alpha + weights[k] * self._buffer[k][k]
         return alpha
-
-def compute_fsr_features(force: np.ndarray, var_window: int = 5) -> np.ndarray:
-
-    force = np.asarray(force, dtype=np.float32)
-    single = force.ndim == 1
-    if single:
-        force = force[:, None]
-    T, A = force.shape
-
-    dF = np.zeros_like(force)
-    dF[1:] = force[1:] - force[:-1]
-
-    sigma = np.zeros_like(force)
-    for t in range(T):
-        lo = max(0, t - var_window + 1)
-        sigma[t] = force[lo : t + 1].var(axis=0)
-
-    feats = np.stack([force, dF, sigma], axis=-1)             
-    return feats[:, 0, :] if single else feats
