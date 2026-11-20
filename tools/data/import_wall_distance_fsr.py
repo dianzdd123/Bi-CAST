@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Build per-frame intent and spatial inputs from tracking, raw force and session calibration.
+# Validate the aligned signals before writing training data.
+
 
 import os
 import sys
@@ -37,6 +40,8 @@ from tools.data.maze_io import (
     get_maze_shape
 )
 
+# Look up wall clearance for each tracked centroid using the registered maze. The distance
+# is a spatial feature associated with that frame.
 def add_d_wall_column(df, dataset_name):
 
     print("加载迷宫数据...")
@@ -250,6 +255,10 @@ def resolve_fsr_calibration(
     return cal
 
 def normalize_fsr(df, calibration, smooth_window=3):
+    """Normalize each hand against its session baseline and deliberate override.
+    Clip intent to the unit interval before applying a trailing mean; initial
+    samples use the available history.
+    """
 
     if smooth_window < 1:
         raise ValueError("smooth_window must be >= 1")
@@ -328,6 +337,8 @@ def _as_finite_float32_vector(values, name):
     return array
 
 
+# Build the updated label dictionary from validated numeric tracking columns while retaining
+# the existing bilateral authority annotations.
 def _prepare_alpha_labels(df, recording_dir, calibration, smooth_window):
 
     required = ("iou", "d_wall", "fsr_L_normalized", "fsr_R_normalized")

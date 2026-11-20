@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Manage interactive camera-to-maze registration. Click and slider callbacks update the
+# overlay before the operator saves parameters or computes maze features.
+
 
 import os
 import sys
@@ -197,6 +200,8 @@ def save_params(dataset_name, cx, cy, scale, angle):
         json.dump(params, f, indent=2)
     return f"✅ 参数已保存: {pf}\n{json.dumps(params, indent=2)}"
 
+# Apply the current calibration to the selected dataset so subsequent geometry queries use
+# the same image alignment.
 def apply_registration(dataset_name, cx, cy, scale, angle, alpha):
 
     if not dataset_name:

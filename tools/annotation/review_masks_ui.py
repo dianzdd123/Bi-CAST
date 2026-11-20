@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Review a stored frame mask and its tracking row together. Confirmation applies the edited
+# alignment before advancing to the next frame.
+
 
 import os
 import sys

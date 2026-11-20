@@ -1,3 +1,6 @@
+# Estimate manipulator dimensions from images and construct projected masks for overlap tests
+# in the maze plane.
+
 from __future__ import annotations
 
 from dataclasses import dataclass

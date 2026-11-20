@@ -1,3 +1,6 @@
+# Rasterize the projected rods in maze coordinates. A swept mask records all visited cells;
+# simultaneous overlap must be checked with the two rods at the same waypoint.
+
 from __future__ import annotations
 
 """
@@ -120,6 +123,8 @@ def check_dual_arm_collision(
 
     return has_collision, overlap
 
+# Compare the left and right projected footprints at matching waypoint indices. Crossings
+# visited at different times do not imply simultaneous overlap.
 def check_dual_arm_trajectory_collision(
     bottom_endpoints: np.ndarray,
     top_endpoints: np.ndarray,

@@ -1,3 +1,6 @@
+# Copy images and matching polygon labels from multiple recordings into one numbered sequence.
+# A shared filename stem pairs an image with its annotation.
+
 import os
 import shutil
 from pathlib import Path

@@ -1,3 +1,6 @@
+# Read and write navigation settings including start regions, target coordinates and geometry.
+# Camera start coordinates and maze target coordinates use different conventions.
+
 from __future__ import annotations
 
 import json

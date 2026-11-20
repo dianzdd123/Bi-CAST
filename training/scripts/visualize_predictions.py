@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Reconstruct the executed authority from consecutive chunk forecasts and plot each arm
+# against its aligned labels.
+
 
 from __future__ import annotations
 

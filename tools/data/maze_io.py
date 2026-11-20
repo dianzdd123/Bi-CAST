@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Load registration and serialized maze features for a recording. Query these features in
+# their registered coordinate frame.
+
 
 import os
 import json

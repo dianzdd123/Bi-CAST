@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Inspect the starting geometry used for navigation. Compare the configured starting region
+# with the recording before interpreting the planned route.
+
 
 from pathlib import Path
 

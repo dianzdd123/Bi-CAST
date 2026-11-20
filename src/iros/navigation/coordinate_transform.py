@@ -1,3 +1,6 @@
+# Register maze and camera pixels through a rotation, uniform scale and translation. Camera
+# functions accept Cartesian x/y; maze arrays are indexed by row and column.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -34,6 +37,8 @@ class MazeRegistration:
             "angle_deg": self.angle_deg,
         }
 
+# Construct the matrix that maps the maze image centre to the selected position in the
+# camera frame.
 def _build_affine(mw: float, mh: float, reg: MazeRegistration) -> np.ndarray:
 
     theta = np.radians(reg.angle_deg)
@@ -49,6 +54,9 @@ def _build_affine(mw: float, mh: float, reg: MazeRegistration) -> np.ndarray:
     return M
 
 def cam_to_maze(cam_x: float, cam_y: float, maze_params: Dict[str, float], maze_shape: Tuple[int, int]) -> MazePoint:
+    """Invert the registered affine map for a camera pixel (x, y). Clip the result
+    to the maze image and return (row, column) for array indexing.
+    """
 
     mh, mw = maze_shape
     reg = MazeRegistration.from_dict(maze_params)
@@ -69,6 +77,9 @@ def cam_to_maze(cam_x: float, cam_y: float, maze_params: Dict[str, float], maze_
     return maze_y, maze_x
 
 def maze_to_cam(maze_y: float, maze_x: float, maze_params: Dict[str, float], maze_shape: Tuple[int, int]) -> CamPoint:
+    """Transform maze (row, column) to camera (x, y). Supply the reference maze
+    shape as (height, width), even for non-square images.
+    """
 
     mh, mw = maze_shape
     reg = MazeRegistration.from_dict(maze_params)

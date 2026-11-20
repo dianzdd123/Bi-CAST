@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Redistribute and normalize recorded force samples. For the manuscript's session-calibrated
+# authority inputs, use import_wall_distance_fsr.py.
+
 
 import os
 import sys

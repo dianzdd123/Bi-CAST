@@ -1,3 +1,6 @@
+# Render the planned motion in waypoint order. The animation illustrates geometry along the
+# route; its playback timing is a display setting.
+
 from __future__ import annotations
 
 import argparse

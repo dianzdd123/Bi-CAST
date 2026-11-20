@@ -1,3 +1,6 @@
+# Export planned robot and manipulator waypoints for offline inspection. Positions describe a
+# reference trajectory in the coordinate frames identified by the exporter.
+
 from __future__ import annotations
 
 """

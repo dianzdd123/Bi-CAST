@@ -1,3 +1,6 @@
+# Display the projected manipulator footprint so its size and placement can be checked against
+# the maze.
+
 import argparse
 from pathlib import Path
 

@@ -1,3 +1,6 @@
+# Place the rigid robot's endpoints around the planned centre and assign a leading endpoint.
+# These geometric roles are independent of the learned human/autonomy weights.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -80,6 +83,10 @@ def compute_endpoint_trajectories(
     robot_length_px: float,
     initial_tangent: Optional[np.ndarray] = None,
 ) -> EndpointTrajectories:
+    """Offset each centre waypoint by half the robot length along the local unit
+    tangent in both directions. The two tracks and centreline share the same
+    waypoint index.
+    """
 
     path_maze = np.asarray(path_result.path_maze, dtype=float)
     n = len(path_maze)
@@ -125,6 +132,10 @@ def compute_master_slave_sequence(
     max_switches: int = 1,
     initial_master: Optional[ArmRole] = None,
 ) -> List[ArmRole]:
+    """Choose a leading endpoint from its distance to the goal. An established
+    leader changes only when the distance difference reaches the switch
+    threshold and the switch budget permits it.
+    """
 
     n = len(trajectories.path_maze)
     bottom_maze = trajectories.bottom_maze

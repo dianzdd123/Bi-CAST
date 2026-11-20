@@ -1,3 +1,6 @@
+# Convert free space and distance-to-wall measurements into A* traversal costs. Invalid cells
+# have infinite cost; traversable cells near a wall receive a finite penalty.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -36,6 +39,10 @@ def build_safety_costmap(
     ump_rod_mask: Optional[np.ndarray] = None,
     robot_length_px: Optional[float] = None,
 ) -> Costmap:
+    """Exclude obstacles and cells with insufficient clearance for the effective
+    radius. On the remaining cells add a distance-dependent penalty to the unit
+    travel cost. An optional rod mask excludes additional occupied pixels.
+    """
 
     if robot_radius_px <= 0:
         raise ValueError("robot_radius_px must be positive.")

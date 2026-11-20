@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Inspect which arm leads at the start of a recorded or planned path, using endpoint position
+# relative to the target.
+
 
 from iros.navigation.arm_switching import ArmRole
 from iros.navigation.config import load_config

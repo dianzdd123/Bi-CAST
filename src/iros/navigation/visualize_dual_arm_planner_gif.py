@@ -1,3 +1,6 @@
+# Render the dual-arm plan as successive poses. Compare both endpoint positions at the same
+# frame when interpreting apparent crossings.
+
 from __future__ import annotations
 
 import argparse

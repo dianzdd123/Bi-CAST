@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Average independent bilateral authority scores for each frame. CSV frame IDs provide
+# alignment; positional pickle arrays must already share the recording order.
+
 
 from __future__ import annotations
 
@@ -35,6 +38,10 @@ def load_annotation(path: Path) -> np.ndarray:
 
 
 def aligned_scores(files):
+    """Return scores with axes (annotator, frame, arm). Validate bilateral values,
+    lengths and CSV frame IDs before stacking; pickle files use positional
+    alignment.
+    """
     if len(set(p.resolve() for p in files)) != len(files):
         raise ValueError("each annotator must supply a distinct file")
     reference = None

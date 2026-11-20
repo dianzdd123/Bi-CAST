@@ -1,3 +1,6 @@
+# Search a registered maze from candidate start pixels to a named target. Each candidate must
+# satisfy the costmap constraints and the configured geometric checks.
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -209,6 +212,10 @@ def plan_best_path_from_region(
     target_name: str,
     rng: Optional[np.random.Generator] = None,
 ) -> PathResult:
+    """Map candidate camera start points onto the maze and evaluate routes to the
+    target. If sampled starts fail, try the centre fallback. A failed search
+    raises an error instead of returning an empty path.
+    """
 
     if rng is None:
         rng = np.random.default_rng()

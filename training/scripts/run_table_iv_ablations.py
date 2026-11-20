@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Run the Table III comparisons with one factor varied at a time. Several table rows reuse the
+# reference run; the output filename retains the historical table_iv spelling.
+
 
 from __future__ import annotations
 
@@ -65,6 +68,9 @@ TABLE_ROWS = [
 ]
 
 def bilateral_average(result: dict) -> dict:
+    """Average the two arm-specific MAE, RMSE and R-squared scores to produce one
+    value per Table III column.
+    """
 
     test = result["test"]
     return {

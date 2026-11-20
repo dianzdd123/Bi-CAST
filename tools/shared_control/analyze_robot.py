@@ -1,3 +1,6 @@
+# Use segmentation outlines and ray casting to inspect the robot's local surroundings in the
+# registered image.
+
 import cv2
 import numpy as np
 import os

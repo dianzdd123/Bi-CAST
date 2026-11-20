@@ -1,3 +1,6 @@
+# Assemble a recording's tracking table, maze registration and extracted features. Downstream
+# planning uses this bundle to express image observations in the maze frame.
+
 from __future__ import annotations
 
 import json

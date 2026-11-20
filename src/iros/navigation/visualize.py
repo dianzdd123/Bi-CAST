@@ -1,3 +1,6 @@
+# Plot navigation results and arm trajectories over the experimental image or maze. Use the
+# overlays to inspect the registration and endpoint assignment.
+
 from __future__ import annotations
 
 import argparse

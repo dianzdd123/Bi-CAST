@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Combine SAM segmentation with a posed robot silhouette. Template completion supports
+# partially occluded frames; the shared-control panel registers results to the maze.
+
 
 import os
 import sys
@@ -60,6 +63,8 @@ def get_predictor():
         print('[SAM2] Model loaded.')
     return _predictor
 
+# Convert mask boundaries to YOLO polygon coordinates. The horizontal coordinate is relative
+# to image width and the vertical coordinate to image height.
 def mask_to_yolo_seg(mask, img_w, img_h, simplify_tolerance=2.0):
     mask_2d = np.squeeze(mask)
     if mask_2d.ndim != 2:
@@ -410,6 +415,7 @@ def list_video_dirs():
                 dirs.append(d)
     return dirs
 
+# Use the numeric frame stem for ordering so the displayed index follows video time.
 def get_sorted_frame_names(video_dir_name):
 
     d = os.path.join(BASE_DIR, video_dir_name)
@@ -532,6 +538,8 @@ def on_undo_point(video_dir_name, frame_idx, points_state, labels_state):
         info = "已清除所有点"
     return img, points_state, labels_state, info
 
+# Use the current point prompts to preview a segmentation before propagating or exporting
+# labels.
 def on_preview_mask(video_dir_name, frame_idx, points_state, labels_state):
 
     if not video_dir_name:
@@ -569,6 +577,8 @@ def on_preview_mask(video_dir_name, frame_idx, points_state, labels_state):
         traceback.print_exc()
         return None, f"预览失败: {str(e)}"
 
+# Export predicted instance labels for the selected sequence. Keep image and label filenames
+# paired when assembling a training dataset.
 def on_export_yolo(video_dir_name, frame_idx, points_state, labels_state, class_id,
                    enable_completion, template_path, completion_thresh,
                    angle_smooth, progress=gr.Progress()):

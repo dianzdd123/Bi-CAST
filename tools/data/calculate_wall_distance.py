@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Attach the maze-derived wall-distance signal to tracking observations for use as a spatial
+# input to authority prediction.
+
 
 import os
 import sys
@@ -16,6 +19,8 @@ from tools.data.maze_io import (
     get_maze_shape
 )
 
+# Look up wall clearance for each tracked centroid using the registered maze. The distance
+# is a spatial feature associated with that frame.
 def add_d_wall_column(dataset_name):
 
     csv_path = os.path.join(MASK_ALIGN_DIR, dataset_name, 'tracking_results.csv')

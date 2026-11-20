@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Run eight synthetic control steps with random weights. The two printed authority values
+# weight the autonomous commands independently for the left and right arms.
+
 
 from __future__ import annotations
 

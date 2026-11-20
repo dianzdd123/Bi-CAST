@@ -1,3 +1,6 @@
+# Warp the robot template into the observed pose and estimate its footprint. The registration
+# scale converts the image-space measurement for maze planning.
+
 from __future__ import annotations
 
 import os

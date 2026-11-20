@@ -1,6 +1,11 @@
+# Check polygon label rows for numeric, normalized coordinate pairs and sufficient vertices.
+# The repair pass removes duplicate or invalid records where applicable.
+
 import os
 from pathlib import Path
 
+# Interpret the first field as the class and the remaining fields as normalized polygon
+# vertices. Return a validity flag and a diagnostic for malformed rows.
 def check_label_format(line):
 
     parts = line.strip().split()

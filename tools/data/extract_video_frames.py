@@ -1,3 +1,6 @@
+# Subsample video with FFmpeg. The interval counts original frames; the paper's tracking
+# protocol keeps every second frame.
+
 import os
 import subprocess
 from pathlib import Path

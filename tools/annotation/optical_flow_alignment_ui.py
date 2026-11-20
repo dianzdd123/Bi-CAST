@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Anchor the template at a selected pose and track it through neighbouring frames. Rigid
+# correction constrains the propagated endpoints before mask export.
+
 
 import os
 import sys
@@ -37,6 +40,8 @@ def list_video_dirs():
                 dirs.append(d)
     return dirs
 
+# Read numbered frames in temporal order. Numeric sorting keeps frame 10 after frame 9 when
+# filenames have different widths.
 def get_sorted_frames(video_dir_name):
 
     d = os.path.join(BASE_DIR, video_dir_name)
@@ -149,6 +154,8 @@ def find_endpoint_circles(mask_uint8):
         "angle_deg": angle,
     }
 
+# Identify the template landmarks used to orient the robot silhouette. Their ordering
+# determines the direction of the fitted pose.
 def get_template_endpoints(tpl_binary):
 
     return find_endpoint_circles(tpl_binary)
@@ -208,6 +215,8 @@ def compute_angle_from_endpoints(bottom_pos, top_pos, tpl_ep, bottom_tpl_key):
     dy_t = tt[1] - tb[1]
     return np.degrees(np.arctan2(dy_f, dx_f)) - np.degrees(np.arctan2(dy_t, dx_t))
 
+# Convert mask boundaries to YOLO polygon coordinates. The horizontal coordinate is relative
+# to image width and the vertical coordinate to image height.
 def mask_to_yolo_seg(mask, img_w, img_h, simplify_tolerance=2.0):
 
     m2d = np.squeeze(mask)
@@ -369,6 +378,7 @@ def on_load_data(video_dir_name, template_path, start_frame):
         traceback.print_exc()
         return None, None, None, None, gr.update(), f"加载失败: {e}"
 
+# Record the selected image location in the current alignment state and refresh the preview.
 def on_click_frame(pos_x, pos_y, video_dir_name, template_path, start_frame,
                    scale, angle_deg, dilate_px, alpha, evt: gr.SelectData):
 

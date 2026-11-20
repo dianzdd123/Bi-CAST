@@ -1,9 +1,16 @@
+# Compute the numerical inputs shared by training and evaluation. Rows follow time order and
+# paired hand measurements use left then right order.
+
 """NumPy input features for the Bi-CAST authority predictor."""
 
 import numpy as np
 
 
 def compute_fsr_features(force: np.ndarray, var_window: int = 5) -> np.ndarray:
+    """Stack force level, one-sample difference and trailing population variance
+    for each hand. The first difference is zero. A single force series returns
+    (T, 3); bilateral input returns (T, 2, 3).
+    """
 
     force = np.asarray(force, dtype=np.float32)
     single = force.ndim == 1

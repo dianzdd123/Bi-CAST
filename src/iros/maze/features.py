@@ -1,3 +1,6 @@
+# Extract geometry from a binary maze. The distance transform measures local clearance, while
+# the skeleton graph supports distances along branches and curvature estimates.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe

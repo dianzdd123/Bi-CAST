@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Check the training environment and its imports before launching a training run.
+
 
 from __future__ import annotations
 

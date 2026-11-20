@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Fine-tune the segmentation tracker from YOLO weights using a dataset YAML. The defaults
+# specify the manuscript's SGD schedule, image size and batch size.
+
 
 from __future__ import annotations
 

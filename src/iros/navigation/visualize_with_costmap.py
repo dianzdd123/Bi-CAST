@@ -1,3 +1,6 @@
+# Overlay a path on the clearance-weighted costmap to inspect where the route approaches
+# expensive cells near the walls.
+
 from __future__ import annotations
 
 import argparse

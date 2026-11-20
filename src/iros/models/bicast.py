@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Predict one sequence of autonomy weights per manipulator. The training loss operates on
+# whole predicted chunks; the controller consumes one aggregated pair per step.
+
 
 from __future__ import annotations
 
@@ -138,6 +141,11 @@ class BiCAST(nn.Module):
         fsr_features: torch.Tensor,                                          
         safety_features: torch.Tensor,                               
     ) -> torch.Tensor:
+        """Encode a batch of RGB windows, bilateral force features and safety
+        measurements. Images have shape (B, T, 3, H, W), force has (B, T, 2, 3),
+        and safety has (B, T, 2). The result has shape (B, C, 2); index zero
+        along the chunk axis predicts the current time step.
+        """
 
         B, T, C, H, W = images.shape
         assert T == self.n_frames, f"expected {self.n_frames} frames, got {T}"
@@ -186,6 +194,10 @@ class BiCASTLoss(nn.Module):
         alpha_target: torch.Tensor,             
         model: Optional[nn.Module] = None,
     ) -> torch.Tensor:
+        """Apply Eq. 9 to aligned prediction and target chunks. Each arm
+        contributes its weighted Huber error and a penalty on successive within-
+        chunk changes. Supplying the model enables the parameter L1 term.
+        """
         loss = alpha_pred.new_zeros(())
         for i, w_i in enumerate(self.w):                
             pred_i, tgt_i = alpha_pred[..., i], alpha_target[..., i]
@@ -205,10 +217,18 @@ class ChunkAggregator:
         self._buffer: deque = deque(maxlen=chunk_size)                     
 
     def reset(self) -> None:
+        """Discard all pending forecasts before starting another independent
+        recording or control episode.
+        """
         self._buffer.clear()
 
     @torch.no_grad()
     def push(self, chunk: torch.Tensor) -> torch.Tensor:
+        """Consume one chronological (C, 2) forecast and return the current
+        left/right pair. For a forecast made k steps ago, element k refers to
+        the current step. Normalize weights over the available history during
+        startup.
+        """
 
         assert chunk.dim() == 2 and chunk.shape[0] == self.chunk_size, (
             f"expected [C={self.chunk_size}, 2] chunk, got {tuple(chunk.shape)}"

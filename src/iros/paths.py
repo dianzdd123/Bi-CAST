@@ -1,3 +1,6 @@
+# Resolve recording, checkpoint, asset and output directories. Environment overrides are read
+# when the module is imported.
+
 from __future__ import annotations
 
 import os

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Sample a starting pose, plan towards a named target, and plot the centre and arm paths. A
+# different sampled start can lead to a different feasible route.
+
 
 from __future__ import annotations
 
@@ -87,6 +90,8 @@ def sample_random_start_point(
     y, x = valid_indices[idx]
     return (float(y), float(x))
 
+# Use the sampled start to build a route to the selected target so repeated trials can
+# explore different initial positions.
 def plan_path_from_random_start(
     data,
     config: NavigationConfig,

@@ -1,3 +1,6 @@
+# Draw the centre route and both endpoints of the rigid robot. Local path tangents supply the
+# orientation for constructing endpoint tracks.
+
 from __future__ import annotations
 
 import argparse

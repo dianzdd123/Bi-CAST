@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Load saved authority predictors and evaluate an ordered recording or temporal half. Left and
+# right scores are computed from the executed sequence of autonomy weights.
+
 
 from __future__ import annotations
 

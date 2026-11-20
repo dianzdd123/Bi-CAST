@@ -1,3 +1,6 @@
+# Inspect rod masks across a collection of images to characterize the geometry used by the
+# navigation experiments.
+
 import argparse
 import json
 from pathlib import Path

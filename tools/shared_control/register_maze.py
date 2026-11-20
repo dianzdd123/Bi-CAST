@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Pair maze landmarks with camera landmarks in the interactive registration tool. Inspect the
+# alignment before applying it across a batch.
+
 
 import cv2
 import numpy as np

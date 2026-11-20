@@ -1,3 +1,6 @@
+# Convert the centre path into oriented endpoint waypoints. Resampling and optional smoothing
+# precede arm assignment and the final collision checks.
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -242,6 +245,10 @@ def generate_full_trajectory(
     rng: Optional[np.random.Generator] = None,
     initial_master: Optional[ArmRole] = None,
 ) -> FullTrajectory:
+    """Generate the robot and two endpoint tracks for a named target. Package the
+    resulting waypoints with the underlying route, role-switch indices and
+    collision diagnostics.
+    """
 
     if path_result is None:
         path_result = plan_best_path_from_region(

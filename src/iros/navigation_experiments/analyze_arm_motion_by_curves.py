@@ -1,3 +1,6 @@
+# Segment the recorded motion by curvature and compare arm trajectories within each segment.
+# Velocity and acceleration estimates depend on the sampling interval.
+
 import json
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Build time-ordered input windows and bilateral targets, train the selected model, and
+# evaluate a held-out sequence. The experimental protocol assigns entire tasks before forming
+# windows.
+
 
 from __future__ import annotations
 
@@ -146,6 +150,10 @@ class AuthorityDataset(Dataset):
         return self.transform(img)
 
     def __getitem__(self, i: int) -> Dict[str, torch.Tensor]:
+        """Construct one example ending at absolute frame t. The image and feature
+        windows end at t; targets begin at t and extend across the forecast
+        horizon. Feature arrays use offsets relative to the selected partition.
+        """
         t = self.indices[i]
         frame_ids = range(t - WINDOW + 1, t + 1)
         images = torch.stack([self._load_frame(j) for j in frame_ids])                  
@@ -163,6 +171,10 @@ def paper_split(
     chunk_size: int = CHUNK,
     img_size: int = IMG_SIZE,
 ) -> tuple[Dataset, Dataset, Dataset]:
+    """Combine training recordings from Tasks 1 and 3. Within the Task 2 recording,
+    form validation windows in the first half and test windows in the second
+    half.
+    """
 
     kw = {"chunk_size": chunk_size, "img_size": img_size}
     train = ConcatDataset([AuthorityDataset(d, **kw) for d in train_dirs])
@@ -180,6 +192,10 @@ def temporal_split(
     chunk_size: int = CHUNK,
     img_size: int = IMG_SIZE,
 ) -> tuple[Dataset, Dataset, Dataset]:
+    """Partition one recording into consecutive frame ranges before constructing
+    examples. Each range needs enough frames for both the observation window and
+    the forecast horizon.
+    """
 
     val_ratio = float(val_ratio)
     test_ratio = val_ratio if test_ratio is None else float(test_ratio)
@@ -284,6 +300,9 @@ class TemporalShift(nn.Module):
         self.n_segment, self.shift_div = n_segment, shift_div
 
     def forward(self, x):
+        """Shift two channel groups in opposite temporal directions inside each
+        window. Other channels retain their original time index.
+        """
         bt, c, h, w = x.shape
         b, t = bt // self.n_segment, self.n_segment
         ns = c // self.shift_div
@@ -362,6 +381,10 @@ def build_model(
     bicast_backbone: str = "resnet50",
     input_modality: str = "vision_fsr_safety",
 ) -> nn.Module:
+    """Select a comparison architecture or configure Bi-CAST's backbone and input
+    streams. Every model returns bilateral chunks so the same evaluation loop
+    can score them.
+    """
 
     if model_name != "bicast":
         return MODEL_REGISTRY[model_name](pretrained=pretrained, chunk_size=chunk_size)
@@ -384,6 +407,10 @@ def build_model(
 
 @torch.no_grad()
 def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> Dict:
+    """Evaluate one ordered sequence, retaining chunk history across minibatches.
+    Compare each aggregated arm weight with its current-frame target. Smoothness
+    here measures mean absolute change in predicted authority.
+    """
 
     model.eval()
     preds, tgts = [], []
@@ -460,6 +487,10 @@ def train_one(
     input_modality: str = "vision_fsr_safety",
     pretrained: bool = True,
 ) -> Dict:
+    """Fit the selected architecture and select a checkpoint by the mean of left
+    and right validation MAE. Reload that checkpoint for the test pass and save
+    the metrics with the epoch history.
+    """
     train_set, val_set, test_set = datasets
     dl = lambda ds, sh: DataLoader(
         ds, batch_size=batch_size, shuffle=sh, num_workers=num_workers, pin_memory=True

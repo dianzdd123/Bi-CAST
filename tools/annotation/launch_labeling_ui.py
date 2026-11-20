@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Start annotation interface instances and manage existing processes. Review the process-
+# selection logic before running the launcher on a shared machine.
+
 
 import os
 import sys
